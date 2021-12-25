@@ -7,25 +7,25 @@ const wss = new ws.Server({
 
 
 wss.on('connection', function connection(ws) {
-    ws.id = Date.now();
-    console.log("\n\n\ ws = ", ws)
     ws.on('message', function (message) {
-        message = JSON.parse(message)
+        message = JSON.parse(message);
+        console.log("message = ", message)
+        ws.roomId = message.roomId;
         switch (message.event) {
             case 'message':
-                broadcastMessage(message, ws.id)
+                broadcastMessage(message, ws.roomId)
                 break;
             case 'connection':
-                broadcastMessage(message, ws.id)
+                broadcastMessage(message, ws.roomId)
                 break;
         }
     })
 })
 
-function broadcastMessage(message, id) {
+function broadcastMessage(message, roomId) {
     wss.clients.forEach(client => {
-        console.log("\n\nclient.id = ", client.id)
-        console.log("id = ", id)
-        client.send(JSON.stringify(message))
+        if (client.roomId === roomId) {
+            client.send(JSON.stringify(message))
+        }
     })
 }

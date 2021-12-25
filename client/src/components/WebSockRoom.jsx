@@ -2,36 +2,37 @@ import React, {useEffect, useRef, useState} from 'react';
 import axios from "axios";
 import constants from '../constants';
 
-const WebSock = () => {
+const WebSockRoom = () => {
     const [messages, setMessages] = useState([]);
     const [value, setValue] = useState('');
-    const socket = useRef()
+    const socket = useRef();
     const [connected, setConnected] = useState(false);
-    const [username, setUsername] = useState('')
+    const [username, setUsername] = useState('');
+    const [roomId, setRoomId] = useState('');
 
-    console.log("socket = ", socket.current)
     function connect(e) {
         e.preventDefault();
-        socket.current = new WebSocket(`${constants.wsServerHost}:${constants.wsServerPort}`)
+        socket.current = new WebSocket(`${constants.wsServerHost}:${constants.wsServerPort}`);
 
         socket.current.onopen = () => {
-            setConnected(true)
+            setConnected(true);
             const message = {
                 event: 'connection',
                 username,
+                roomId,
                 id: Date.now()
             }
             socket.current.send(JSON.stringify(message))
         }
         socket.current.onmessage = (event) => {
-            const message = JSON.parse(event.data)
-            setMessages(prev => [message, ...prev])
+            const message = JSON.parse(event.data);
+            setMessages(prev => [message, ...prev]);
         }
         socket.current.onclose= () => {
-            console.log('Socket closed')
+            console.log('Socket closed');
         }
         socket.current.onerror = () => {
-            console.log('Socket an error has occurred')
+            console.log('Socket an error has occurred');
         }
     }
 
@@ -40,9 +41,10 @@ const WebSock = () => {
 
         const message = {
             username,
+            roomId,
             message: value,
             id: Date.now(),
-            event: 'message'
+            event: 'message',
         }
         socket.current.send(JSON.stringify(message));
         setValue('')
@@ -58,6 +60,11 @@ const WebSock = () => {
                         onChange={e => setUsername(e.target.value)}
                         type="text"
                         placeholder="Enter username"/>
+                    <input
+                        value={roomId}
+                        onChange={e => setRoomId(e.target.value)}
+                        type="text"
+                        placeholder="Enter room ID"/>
                     <button onClick={connect}>Connect</button>
                 </form>
             </div>
@@ -91,4 +98,4 @@ const WebSock = () => {
     );
 };
 
-export default WebSock;
+export default WebSockRoom;
